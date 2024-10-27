@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=70.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "malsearch.__info__.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt"]
+
+[project]
+name = "malsearch"
+authors = [
+  {name="Alexandre D'Hondt", email="alexandre.dhondt@gmail.com"},
+]
+description = "Library for getting samples from multiple malware databases"
+license = {file = "LICENSE"}
+keywords = ["python", "development", "programming", "malware-samples", "malware-database"]
+requires-python = ">=3.9,<4"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "pyzipper",
+  "requests-cache",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+# development dependency groups
+codext = ["codext"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+documentation = "https://python-malsearch.readthedocs.io/en/latest/?badge=latest"
+homepage = "https://github.com/dhondta/python-malsearch"
+issues = "https://github.com/dhondta/python-malsearch/issues"
+repository = "https://github.com/dhondta/python-malsearch"
+
+[project.scripts]
+malsearch = "malsearch.__main__:main"
