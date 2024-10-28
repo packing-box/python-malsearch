@@ -3,11 +3,12 @@
 MalSearch is a library that allows to collect malware samples from multiple malware databases using their API's. It relies on:
 
 - [Maldatabase](https://maldatabase.com/api-doc.html)
-- [MalShare](https://www.malshare.com)
+- [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
+- [MalShare](https://malshare.com/doc.php)
 - [Malware Bazaar](https://bazaar.abuse.ch/api)
-- [Triage]()
-- [VirusShare]()
-- [VirusTotal](https://docs.virustotal.com/reference/getting-started)
+- [Triage](https://tria.ge/docs)
+- [VirusShare](https://virusshare.com/apiv2_reference)
+- [VirusTotal](https://docs.virustotal.com/reference/overview)
 
 
 ## Setup
@@ -18,8 +19,3 @@ This library is available on [PyPi](https://pypi.python.org/pypi/malsearch/) and
 pip install malsearch
 ```
 
-or
-
-```sh
-pip3 install malsearch
-```

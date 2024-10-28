@@ -4,13 +4,21 @@
 
 [![PyPi](https://img.shields.io/pypi/v/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
 [![Read The Docs](https://readthedocs.org/projects/python-malsearch/badge/?version=latest)](https://python-malsearch.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://github.com/dhondta/python-malsearch/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/python-malsearch/actions/workflows/python-package.yml)
-[![Coverage Status](https://raw.githubusercontent.com/dhondta/python-malsearch/main/docs/coverage.svg)](#)
+[![Build Status](https://github.com/packing-box/python-malsearch/actions/workflows/python-package.yml/badge.svg)](https://github.com/packing-box/python-malsearch/actions/workflows/python-package.yml)
+[![Coverage Status](https://raw.githubusercontent.com/packing-box/python-malsearch/main/docs/coverage.svg)](#)
 [![Python Versions](https://img.shields.io/pypi/pyversions/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
-[![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-malsearch/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-malsearch?targetFile=requirements.txt)
+[![Known Vulnerabilities](https://snyk.io/test/github/packing-box/python-malsearch/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/packing-box/python-malsearch?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
 
-This library communicates with API's of multiple malware databases to collect malware samples.
+This library communicates with API's of the following malware databases to collect malware samples:
+
+- [Maldatabase](https://maldatabase.com/api-doc.html)
+- [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
+- [MalShare](https://malshare.com/doc.php)
+- [Malware Bazaar](https://bazaar.abuse.ch/api)
+- [Triage](https://tria.ge/docs)
+- [VirusShare](https://virusshare.com/apiv2_reference)
+- [VirusTotal](https://docs.virustotal.com/reference/overview)
 
 ```sh
 pip install malsearch
@@ -23,8 +31,8 @@ TODO
 
 ## :clap:  Supporters
 
-[![Stargazers repo roster for @dhondta/python-malsearch](https://reporoster.com/stars/dark/dhondta/python-malsearch)](https://github.com/dhondta/python-malsearch/stargazers)
+[![Stargazers repo roster for @packing-box/python-malsearch](https://reporoster.com/stars/dark/packing-box/python-malsearch)](https://github.com/packing-box/python-malsearch/stargazers)
 
-[![Forkers repo roster for @dhondta/python-malsearch](https://reporoster.com/forks/dark/dhondta/python-malsearch)](https://github.com/dhondta/python-malsearch/network/members)
+[![Forkers repo roster for @packing-box/python-malsearch](https://reporoster.com/forks/dark/packing-box/python-malsearch)](https://github.com/packing-box/python-malsearch/network/members)
 
 <p align="center"><a href="#"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>
