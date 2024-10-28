@@ -37,7 +37,10 @@ classifiers = [
 ]
 dependencies = [
   "pyzipper",
-  "requests-cache",
+  "requests-cache>=1.2.1",
+  "requests>=2.32.2",  # SNYK-PYTHON-REQUESTS-6928867
+  "urllib3>=1.26.19",  # SNYK-PYTHON-URLLIB3-7267250
+  "zipp>=3.19.1",      # SNYK-PYTHON-ZIPP-7430899
 ]
 dynamic = ["version"]
 
