@@ -6,8 +6,9 @@ def _parser(name, description, examples):
     from argparse import ArgumentParser, RawTextHelpFormatter
     descr = f"{name} {__version__}\n\nAuthor   : {__author__} ({__email__})\nCopyright: {__copyright__}\nLicense  :" \
             f" {__license__}\nSource   : {__source__}\n\n{description}.\n\n"
+    examples = [f"malsearch {e}" if not e.startswith("malsearch ") else e for e in examples]
     return ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False,
-                          epilog="usage examples:\n- " + "\n- ".join(examples) if len(examples) > 0 else None)
+                          epilog="usage examples:\n  " + "\n  ".join(examples) if len(examples) > 0 else None)
 
 
 def _setup(parser):
