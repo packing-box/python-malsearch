@@ -15,3 +15,4 @@ class Maldatabase(API):
         self._get("", headers={'Accept-Encoding': "gzip, deflate"})
         for data in self.json:
             yield data[hashtype]
+

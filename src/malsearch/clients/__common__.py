@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import builtins
 import logging
 
 
@@ -29,9 +30,16 @@ def hashtype(*types):
     return _wrapper
 
 
+class HashNotFoundError(Exception):
+    __module__ = 'builtins'
+builtins.HashNotFoundError = HashNotFoundError
+
+
 class _Base:
     def __init__(self, **kwargs):
         self.name = self.__class__.__name__.lower()
+        self._error = False
+        self._output_dir = "./"
         for k, v in kwargs.items():
             setattr(self, f"_{k}", v)
     
@@ -41,9 +49,13 @@ class _Base:
         except ImportError:
             import codecs
         try:
+            self.content = self.content.encode()
+        except:
+            pass
+        try:
             self.content = codecs.decode(self.content, codec)
         except ValueError as e:
-            logger.debug(f"cannot decode ({e})")
+            [logger.debug, logger.error][self._error](f"cannot decode ({e})")
         except Exception as e:
             logger.exception(e)
         return self
@@ -55,7 +67,7 @@ class _Base:
             with open(join(self._output_dir, filename), 'wb') as f:
                 f.write(c)
         except AttributeError:
-            logger.debug("cannot save (no content downloaded)")
+            [logger.debug, logger.error][self._error]("cannot save (no content downloaded)")
         except Exception as e:
             logger.exception(e)
         return self
@@ -78,7 +90,7 @@ class _Base:
                     except NotImplementedError:
                         continue
         except AttributeError:
-            logger.debug("cannot unzip (no content downloaded)")
+            [logger.debug, logger.error][self._error]("cannot unzip (no content downloaded)")
         except Exception as e:
             logger.exception(e)
         return self
@@ -87,16 +99,19 @@ class _Base:
 class API(_Base):
     def __request(self, path, **kwargs):
         from requests import exceptions, get, post
+        if not getattr(self, "_pre_condition", lambda: True)():
+            raise HashNotFoundError(f"The given hash was not known on {self.__class__.__name__}")
         for i in ["headers", "params"]:
-            n = getattr(self, f"_api_key_{i.rstrip('s')}", None)
-            if n:
+            for k, v in getattr(self, f"_{i}", {}).items():
+                kwargs[i] = kwargs[i] or {}
+                kwargs[i].setdefault(k, v)
+            if n := getattr(self, f"_api_key_{i.rstrip('s')}", None):
                 d = kwargs.pop(i, {}) or {}
                 d[n] = self._api_key
                 kwargs[i] = d
-        n = getattr(self, "_auth_method", None)
-        if n:
+        if n := getattr(self, "_auth_method", None):
             kwargs['headers'] = kwargs['headers'] or {}
-            kwargs['headers']['Authorization'] = f"{self._auth_method} {self._api_key}"
+            kwargs['headers']['Authorization'] = f"{n} {self._api_key}"
         r = (get if 'params' in kwargs else post)(f"{self.url}/{path}", **kwargs)
         try:
             r.raise_for_status()
@@ -105,19 +120,24 @@ class API(_Base):
             if r.status_code == 403:
                 import datetime as dt
                 from contextlib import nullcontext
-                with kwargs.get('lock') or nullcontext():
-                    if not self._config.has_section("Disabled"):
-                        self._config.add_section("Disabled")
-                    boff = dt.timedelta(seconds=getattr(self, "backoff", _MIN_BACKOFF))
-                    self._config['Disabled'][self.name] = dt.datetime.strftime(dt.datetime.now() + boff,
-                                                                               "%d/%m/%Y %H:%M:%S")
-                    with open(self._config.path, 'w') as f:
-                        self._config.write(f)
+                if hasattr(self, "_config"):
+                    with kwargs.get('lock') or nullcontext():
+                        if not self._config.has_section("Disabled"):
+                            self._config.add_section("Disabled")
+                        boff = dt.timedelta(seconds=getattr(self, "backoff", _MIN_BACKOFF))
+                        self._config['Disabled'][self.name] = dt.datetime.strftime(dt.datetime.now() + boff,
+                                                                                   "%d/%m/%Y %H:%M:%S")
+                        with open(self._config.path, 'w') as f:
+                            self._config.write(f)
             logger.exception(e)
         try:
             self.json = r.json()
+            if 'content' in self.json.keys():
+                self.content = self.json['content']
         except:
             pass
+        if not getattr(self, "_post_condition", lambda: True)():
+            raise HashNotFoundError(f"The given hash was not known on {self.__class__.__name__}")
 
     def _get(self, path, params=None, headers=None):
         """ Perform a GET request.
@@ -160,3 +180,4 @@ class Web(_Base):
             return BeautifulSoup(r.content, "html.parser")
         except exceptions.RequestException as e:
             return
+

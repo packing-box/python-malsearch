@@ -87,7 +87,7 @@ def download_sample(hash, config=None, **kwargs):
         logger.debug(f"trying {client.name}...")
         try:
             client.get_file_by_hash(hash)
-            if hasattr(client, "content") and client.content is not None and len(client.content) > 0:
+            if len(getattr(client, "content", "")) > 0:
                 logger.debug("found sample !")
                 return
         except AttributeError:
@@ -120,3 +120,4 @@ def get_samples_feed(config=None, **kwargs):
         except Exception as e:
             logger.exception(e)
     logger.info(f"got {count} hashes")
+

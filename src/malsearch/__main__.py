@@ -65,3 +65,4 @@ def main():
     else:
         import logging
         logging.getLogger("malsearch").warning("nothing to download")
+

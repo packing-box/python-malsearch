@@ -2,7 +2,7 @@
 from .__common__ import Web
 
 
-__all__ = ["MalwareFeed"]
+__all__ = ["VxUnderground"]
 
 
 class VxUnderground(Web):
@@ -11,3 +11,4 @@ class VxUnderground(Web):
     def get_malware_feed(self):
         #TODO
         pass
+

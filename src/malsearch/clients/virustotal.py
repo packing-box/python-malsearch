@@ -19,3 +19,4 @@ class VirusTotal(API):
                     hash2, _ = n.split("_", 1)
                     self._get(f"/files/{hash2}/download")._save(hash2)
         self._get(f"files/{hash}/download")._unzip(b"infected")._save(hash)
+
