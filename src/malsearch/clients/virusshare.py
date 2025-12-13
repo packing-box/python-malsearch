@@ -12,4 +12,5 @@ class VirusShare(API):
     
     @hashtype("md5", "sha1", "sha224", "sha256", "sha384", "sha512")
     def get_file_by_hash(self, hash):
-         self._get("download", params={'hash': hash})._save(hash)
+         self._get("download", params={'hash': hash})._unzip(b"infected")._save(hash)
+ 
