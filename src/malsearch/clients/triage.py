@@ -16,7 +16,7 @@ class Triage(API):
         self._get("search", params={'query': f"{hashtype}:{hash}"})
         try:
             sample_id = self.json['data'][0]['id']
-            self._get(f"samples/{sample_id}/sample")._save(hash)
+            self._get(f"samples/{sample_id}/sample")._save()
         except IndexError:
             delattr(self, "content")
 

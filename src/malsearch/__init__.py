@@ -4,6 +4,7 @@ from os import cpu_count
 
 from .clients import *
 from .clients import __all__ as _clients
+from .clients.__common__ import _valid_hash
 
 
 __all__ = ["download_sample", "download_samples", "get_samples_feed"] + _clients
@@ -25,23 +26,25 @@ def _check_conf(method):
             else:
                 if isinstance(config, str):
                     config = _valid_conf(config)
-                clients = []
+                cmap = {n: cls for n, cls in _CLIENTS_MAP.items() if (s := kwargs.get('select')) is None or n in s}
+                clients, skipped = [], kwargs.get('skip') or []
                 for n in config['API keys']:
-                    if not hasattr(_CLIENTS_MAP[n], method):
+                    if n not in cmap.keys() or not hasattr(cmap[n], method):
                         continue
-                    if n in (kwargs.get('skip') or []):
+                    if n in skipped:
                         logger.debug(f"{n} skipped")
                         continue
                     if config.has_section("Disabled"):
                         t = config['Disabled'].get(n)
                         if t is not None:
+                            import datetime as dt
                             try:
                                 if dt.datetime.strptime(t, "%d/%m/%Y %H:%M:%S") < dt.datetime.now():
                                     from contextlib import nullcontext
                                     with kwargs.get('lock') or nullcontext():
                                         config['Disabled'].pop(n)
-                                        with open(config.path, 'w') as f:
-                                            config.write(f)
+                                        with open(config.path, 'w') as cfg:
+                                            config.write(cfg)
                                 else:
                                     logger.warning(f"{n} is disabled until {t}")
                                     continue
@@ -75,43 +78,69 @@ def _valid_conf(path):
     return conf
 
 
+def _valid_hash_file(path):
+    from os.path import exists, expanduser
+    path = expanduser(path)
+    if not exists(path):
+        raise ValueError("hashes file does not exist")
+    hashes = []
+    with open(path) as f:
+        for l in f:
+            hashes.append(_valid_hash(l.strip()))
+    return hashes
+
+
 @_check_conf("get_file_by_hash")
 def download_sample(hash, config=None, **kwargs):
-    import datetime as dt
+    """ Function to download a single sample """
     from os.path import exists, join
     p = join(kwargs.get('output_dir', "."), hash)
     if exists(p) and not kwargs.get('overwrite'):
         logger.info(f"'{p}' already exists")
         return
-    for client in clients:
+    for client in kwargs['clients']:
         logger.debug(f"trying {client.name}...")
         try:
             client.get_file_by_hash(hash)
             if len(getattr(client, "content", "")) > 0:
-                logger.debug("found sample !")
-                return
+                logger.info(f"found {hash} on {client.__class__.__name__} !")
+                return client
         except AttributeError:
             continue  # not a client for downloading samples (e.g. Maldatabase)
-        except ValueError as e:
+        except (HashNotFoundError, ServiceUnavailable, ValueError) as e:
             logger.debug(e)
         except Exception as e:
             logger.exception(e)
-    logger.warning(f"could not find the sample with hash {hash}")
+    logger.warning(f"could not find {hash}")
 
 
 def download_samples(*hashes, max_workers=_MAX_WORKERS, **kwargs):
-    from concurrent.futures import ThreadPoolExecutor as Pool
+    """ Threaded function to download samples from hashes in parallel. """
+    from concurrent.futures import as_completed, ThreadPoolExecutor as Pool
     from threading import Lock
+    try:
+        from tqdm import tqdm
+        TQDM = True
+    except ImportError:
+        TQDM = False
     kwargs['lock'] = Lock()
-    with Pool(max_workers=max_workers) as executor:
-        for h in hashes:
-            executor.submit(download_sample, h.lower(), **kwargs)
+    if len(hashes) == 0:
+        return
+    elif len(hashes) == 1:
+        download_sample(hashes[0].lower(), **kwargs)
+    else:
+        with Pool(max_workers=max_workers) as executor:
+            tasks = []
+            for h in hashes:
+                tasks.append(executor.submit(download_sample, h.lower(), **kwargs))
+            for task in (tqdm(as_completed(tasks), total=len(hashes)) if TQDM else as_completed(tasks)):
+                task.result()
 
 
 @_check_conf("get_malware_feed")
 def get_samples_feed(config=None, **kwargs):
     count = 0
-    for client in clients:
+    for client in kwargs['clients']:
         logger.debug(f"trying {client.name}...")
         try:
             for h in client.get_malware_feed():

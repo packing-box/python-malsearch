@@ -5,15 +5,22 @@ import logging
 
 __all__ = ["API", "Web"]
 
+_HASHTYPES_MAP = {'md5': 32, 'sha1': 40, 'sha224': 56, 'sha256': 64, 'sha384': 96, 'sha512': 128}
 _MIN_BACKOFF = 300
 
 logger = logging.getLogger("malsearch")
 
 
+def _hash_type(hash, *types):
+    try:
+        return {v: k for k, v in _HASHTYPES_MAP.items()}[len(_valid_hash(hash))]
+    except ValueError:
+        pass
+
+
 def _valid_hash(hash, *types):
     import re
-    types_map = {'md5': 32, 'sha1': 40, 56: 'sha224', 'sha256': 64, 'sha384': 96, 'sha512': 128}
-    pattern = "|".join(f"[0-9a-f]{{{types_map[t]}}}" for t in (types or types_map.keys()))
+    pattern = "|".join(f"[0-9a-f]{{{_HASHTYPES_MAP[t]}}}" for t in (types or _HASHTYPES_MAP.keys()))
     if re.match(r"{}".format(f"^{pattern}$"), hash, re.I) is None:
         raise ValueError("hash type not supported")
     return hash.lower()
@@ -25,6 +32,8 @@ def hashtype(*types):
         @wraps(f)
         def _subwrapper(*args, **kwargs):
             _valid_hash(args[0] if isinstance(args[0], str) else args[1], *types)
+            if not isinstance(args[0], str):
+                args[0].hash = args[1]
             return f(*args, **kwargs)
         return _subwrapper
     return _wrapper
@@ -32,7 +41,18 @@ def hashtype(*types):
 
 class HashNotFoundError(Exception):
     __module__ = 'builtins'
+    
+    def __init__(self, hash, name):            
+        super().__init__(f"{hash} is not known to {name}")
 builtins.HashNotFoundError = HashNotFoundError
+
+
+class ServiceUnavailable(Exception):
+    __module__ = 'builtins'
+    
+    def __init__(self, name, reason=None):            
+        super().__init__(f"{name} seems to be currently unavailable{[f' ({reason})', ''][reason is None]}")
+builtins.ServiceUnavailable = ServiceUnavailable
 
 
 class _Base:
@@ -40,6 +60,7 @@ class _Base:
         self.name = self.__class__.__name__.lower()
         self._error = False
         self._output_dir = "./"
+        self._postcheck = True
         for k, v in kwargs.items():
             setattr(self, f"_{k}", v)
     
@@ -60,18 +81,25 @@ class _Base:
             logger.exception(e)
         return self
     
-    def _save(self, filename):
+    def _save(self, filename=None):
         from os.path import join
         try:
             c = self.content
-            with open(join(self._output_dir, filename), 'wb') as f:
+            with open(join(self._output_dir, filename or self.hash), 'wb') as f:
                 f.write(c)
+            if filename is None and self._postcheck:
+                import hashlib
+                h = getattr(hashlib, _hash_type(self.hash))()
+                h.update(self.content)
+                if (hd := h.hexdigest()) != self.hash:
+                    logger.warning(f"content and hash mismatch ({hd} != {self.hash})")
         except AttributeError:
-            [logger.debug, logger.error][self._error]("cannot save (no content downloaded)")
+            if self.enabled:
+                [logger.debug, logger.error][self._error]("cannot save (no content downloaded)")
         except Exception as e:
             logger.exception(e)
         return self
-
+    
     def _unzip(self, password=None):
         from io import BytesIO
         try:
@@ -90,17 +118,24 @@ class _Base:
                     except NotImplementedError:
                         continue
         except AttributeError:
-            [logger.debug, logger.error][self._error]("cannot unzip (no content downloaded)")
+            if self.enabled:
+                [logger.debug, logger.error][self._error]("cannot unzip (no content downloaded)")
         except Exception as e:
             logger.exception(e)
         return self
+    
+    @property
+    def enabled(self):
+        return not hasattr(self, "_config") or \
+               not self._config.has_section("Disabled") or \
+               self.name not in self._config['Disabled']
 
 
 class API(_Base):
     def __request(self, path, **kwargs):
         from requests import exceptions, get, post
         if not getattr(self, "_pre_condition", lambda: True)():
-            raise HashNotFoundError(f"The given hash was not known on {self.__class__.__name__}")
+            raise HashNotFoundError(self.hash, self.__class__.__name__)
         for i in ["headers", "params"]:
             for k, v in getattr(self, f"_{i}", {}).items():
                 kwargs[i] = kwargs[i] or {}
@@ -129,7 +164,13 @@ class API(_Base):
                                                                                    "%d/%m/%Y %H:%M:%S")
                         with open(self._config.path, 'w') as f:
                             self._config.write(f)
-            logger.exception(e)
+                    logger.warning(f"{self.name} raised 403 (Forbidden) and was disabled ; check out your API key")
+            elif r.status_code == 404:
+                raise HashNotFoundError(self.hash, self.__class__.__name__)
+            elif 500 <= r.status_code < 600:
+                raise ServiceUnavailable(self.__class__.__name__, f"{r.status_code} - {r.reason}")
+            else:
+                logger.exception(e)
         try:
             self.json = r.json()
             if 'content' in self.json.keys():
@@ -137,7 +178,7 @@ class API(_Base):
         except:
             pass
         if not getattr(self, "_post_condition", lambda: True)():
-            raise HashNotFoundError(f"The given hash was not known on {self.__class__.__name__}")
+            raise HashNotFoundError(self.hash, self.__class__.__name__)
 
     def _get(self, path, params=None, headers=None):
         """ Perform a GET request.

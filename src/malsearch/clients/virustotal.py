@@ -8,7 +8,7 @@ __all__ = ["VirusTotal"]
 class VirusTotal(API):
     doc = "https://docs.virustotal.com/reference/overview"
     url = "https://www.virustotal.com/api/v3"
-    _api_key_header = "X-Apikey"
+    _api_key_header = "x-apikey"
     
     @hashtype("md5", "sha1", "sha256")
     def get_file_by_hash(self, hash):
@@ -18,5 +18,5 @@ class VirusTotal(API):
                 if n.endswith("_unpacked"):
                     hash2, _ = n.split("_", 1)
                     self._get(f"/files/{hash2}/download")._save(hash2)
-        self._get(f"files/{hash}/download")._unzip(b"infected")._save(hash)
+        self._get(f"files/{hash}/download")._unzip(b"infected")._save()
 

@@ -33,18 +33,25 @@ def _setup(parser):
 
 def main():
     from os import makedirs
-    from .__init__ import _valid_conf, download_samples, get_samples_feed
-    from .clients.__common__ import _valid_hash
+    from .__init__ import _valid_conf, _valid_hash, _valid_hash_file, download_samples, get_samples_feed
     parser = _parser("MalSearch", "This tool is aimed to search for malware samples across some public databases",
                      ["2037f9b7dd268eef7d2e950b27c6cf80e3ba692d262c785ab67b04dc71c99bf9",
+                      "094fd325049b8a9cf6d3e5ef2a6d4cc6a567d7d49c35f8bb8dd9e3c6acf3d78d --select malwarebazaar",
                       "-f hashes.txt -o samples --disable-cache"])
     parser.add_argument("sample_hash", type=_valid_hash, nargs="*", help="input hash")
-    parser.add_argument("-f", "--from-file", help="get hashes from the target file (newline-separated list)")
-    parser.add_argument("-m", "--from-malware-feed", action="store_true", help="get hashes from malware feeds")
+    parser.add_argument("-f", "--from-file", type=_valid_hash_file,
+                        help="get hashes from the target file (newline-separated list)")
+    parser.add_argument("-m", "--from-malware-feed", action="store_true",
+                        help="get hashes from malware feeds (default: False)")
     opt = parser.add_argument_group("optional arguments")
-    opt.add_argument("-c", "--config", default="~/.malsearch.conf", type=_valid_conf, help="INI configuration file")
-    opt.add_argument("-o", "--output-dir", default=".", help="output directory for downloaded samples")
-    opt.add_argument("-s", "--skip", nargs="*", help="skip the specified clients while downloading samples")
+    opt.add_argument("-c", "--config", default="~/.malsearch.conf", type=_valid_conf,
+                     help="INI configuration file (default: ~/.malsearch.conf)")
+    opt.add_argument("-o", "--output-dir", default=".", help="output directory for downloaded samples (default: .)")
+    opt_clients = opt.add_mutually_exclusive_group()
+    opt_clients.add_argument("--select", nargs="*",
+                             help="select the specified clients while downloading samples (default: all)")
+    opt_clients.add_argument("--skip", nargs="*",
+                             help="skip the specified clients while downloading samples (default: none)")
     opt.add_argument("-u", "--unpacked", action="store_true",
                      help="if available and target sample is packed, download unpacked version too")
     opt.add_argument("--disable-cache", action="store_true", help="disable requests cache")
