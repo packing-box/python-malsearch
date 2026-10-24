@@ -171,7 +171,7 @@ class API(_Base):
     def __request(self, path, **kwargs):
         import datetime as dt
         from requests import exceptions, get, post
-        if not getattr(self, "_api_key", None):
+        if getattr(self, "_requires_key", True) and not getattr(self, "_api_key", None):
             if self.name not in API._missing_key:
                 API._missing_key.add(self.name)
                 logger.warning(f"Did you forget to set up the API key for client '{self.name}' ?")

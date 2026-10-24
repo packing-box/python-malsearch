@@ -17,7 +17,7 @@ def _setup(parser):
         import logging
         logging.basicConfig(level=[logging.INFO, logging.DEBUG][args.verbose])
         # silence third-party debug noise (urllib3 also logs request URLs, hence possibly API keys)
-        for name in ["requests_cache", "urllib3"]:
+        for name in ["charset_normalizer", "requests_cache", "urllib3"]:
             logging.getLogger(name).setLevel(logging.WARNING)
     if not args.disable_cache:
         from requests_cache import install_cache
