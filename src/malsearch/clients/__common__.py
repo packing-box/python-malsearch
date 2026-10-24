@@ -132,8 +132,16 @@ class _Base:
 
 
 class API(_Base):
+    _invalid_key = lambda s, r: r.status_code == 403
+    _missing_key = set()
+    
     def __request(self, path, **kwargs):
         from requests import exceptions, get, post
+        if not getattr(self, "_api_key", None):
+            if self.name not in API._missing_key:
+                API._missing_key.add(self.name)
+                logger.warning(f"Did you forget to set up the API key for client '{self.name}' ?")
+            raise ServiceUnavailable(self.__class__.__name__, "no API key")
         if not getattr(self, "_pre_condition", lambda: True)():
             raise HashNotFoundError(self.hash, self.__class__.__name__)
         for i in ["headers", "params"]:
@@ -147,16 +155,20 @@ class API(_Base):
         if n := getattr(self, "_auth_method", None):
             kwargs['headers'] = kwargs['headers'] or {}
             kwargs['headers']['Authorization'] = f"{n} {self._api_key}"
-        r = (get if 'params' in kwargs else post)(f"{self.url}/{path}", **kwargs)
+        try:
+            r = (get if 'params' in kwargs else post)(f"{self.url}/{path}", **kwargs)
+        except exceptions.RequestException as e:
+            # do not log the exception itself as its message may contain the URL, hence the API key
+            raise ServiceUnavailable(self.__class__.__name__, e.__class__.__name__)
         try:
             r.raise_for_status()
             self.content = r.content
         except exceptions.RequestException as e:
-            if r.status_code == 403:
+            if self._invalid_key(r):
                 import datetime as dt
                 from contextlib import nullcontext
                 if hasattr(self, "_config"):
-                    with kwargs.get('lock') or nullcontext():
+                    with getattr(self, "_lock", None) or nullcontext():
                         if not self._config.has_section("Disabled"):
                             self._config.add_section("Disabled")
                         boff = dt.timedelta(seconds=getattr(self, "backoff", _MIN_BACKOFF))
@@ -164,13 +176,15 @@ class API(_Base):
                                                                                    "%d/%m/%Y %H:%M:%S")
                         with open(self._config.path, 'w') as f:
                             self._config.write(f)
-                    logger.warning(f"{self.name} raised 403 (Forbidden) and was disabled ; check out your API key")
+                    logger.warning(f"{self.name} rejected the API key ({r.status_code} - {r.reason}) and was disabled ; "
+                                   "check out your API key")
             elif r.status_code == 404:
                 raise HashNotFoundError(getattr(self, "hash", path), self.__class__.__name__)
             elif 500 <= r.status_code < 600:
                 raise ServiceUnavailable(self.__class__.__name__, f"{r.status_code} - {r.reason}")
             else:
-                logger.exception(e)
+                # do not log the exception itself as its message contains the URL, hence possibly the API key
+                logger.error(f"{self.name} returned {r.status_code} - {r.reason}")
         try:
             self.json = r.json()
             if 'content' in self.json.keys():

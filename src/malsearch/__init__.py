@@ -28,7 +28,8 @@ def _check_conf(method):
                     config = _valid_conf(config)
                 cmap = {n: cls for n, cls in _CLIENTS_MAP.items() if (s := kwargs.get('select')) is None or n in s}
                 clients, skipped = [], kwargs.get('skip') or []
-                for n in config['API keys']:
+                # also consider explicitly selected clients without an API key so that the user gets warned
+                for n in (list(config['API keys']) + [n for n in s or [] if n not in config['API keys']]):
                     if n not in cmap.keys() or not hasattr(cmap[n], method):
                         continue
                     if n in skipped:
@@ -146,6 +147,8 @@ def get_samples_feed(config=None, **kwargs):
             for h in client.get_malware_feed():
                 yield h
                 count += 1
+        except ServiceUnavailable as e:
+            logger.debug(e)
         except Exception as e:
             logger.exception(e)
     logger.info(f"got {count} hashes")

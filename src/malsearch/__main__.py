@@ -16,17 +16,20 @@ def _setup(parser):
     if hasattr(args, "verbose"):
         import logging
         logging.basicConfig(level=[logging.INFO, logging.DEBUG][args.verbose])
+        # silence third-party debug noise (urllib3 also logs request URLs, hence possibly API keys)
+        for name in ["requests_cache", "urllib3"]:
+            logging.getLogger(name).setLevel(logging.WARNING)
     if not args.disable_cache:
         from requests_cache import install_cache
         install_cache("malsearch",
-            use_cache_dir=True,                 # Save files in the default user cache dir
-            cache_control=True,                 # Use Cache-Control response headers for expiration, if available
-            expire_after=86400,                 # Otherwise expire responses after one day
-            allowable_codes=[404],              # Cache 400 responses as a solemn reminder of your failures
-            allowable_methods=['GET', 'POST'],  # Cache whatever HTTP methods you want
-            ignored_parameters=['api_key'],     # Don't match this request param, and redact if from the cache
-            match_headers=['Accept-Language'],  # Cache a different response per language
-            stale_if_error=True,                # In case of request errors, use stale cache data if possible
+            use_cache_dir=True,                        # Save files in the default user cache dir
+            cache_control=True,                        # Use Cache-Control response headers for expiration, if available
+            expire_after=86400,                        # Otherwise expire responses after one day
+            allowable_codes=[404],                     # Cache 400 responses as a solemn reminder of your failures
+            allowable_methods=['GET', 'POST'],         # Cache whatever HTTP methods you want
+            ignored_parameters=['api_key', 'apikey'],  # Don't match these request params, redact them from the cache
+            match_headers=['Accept-Language'],         # Cache a different response per language
+            stale_if_error=True,                       # In case of request errors, use stale cache data if possible
         )
     return args
 
@@ -71,3 +74,6 @@ def main():
         import logging
         logging.getLogger("malsearch").warning("nothing to download")
 
+
+if __name__ == "__main__":
+    main()
