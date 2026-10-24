@@ -196,6 +196,8 @@ class API(_Base):
         if n := getattr(self, "_auth_method", None):
             kwargs['headers'] = kwargs['headers'] or {}
             kwargs['headers']['Authorization'] = f"{n} {self._api_key}"
+        # never check a response against the JSON of a previous one
+        vars(self).pop("json", None)
         try:
             r = (get if 'params' in kwargs else post)(f"{self.url}/{path}", **kwargs)
         except exceptions.RequestException as e:

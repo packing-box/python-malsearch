@@ -21,8 +21,8 @@ This library communicates with the APIs of the following malware databases to do
 | [Koodous](https://docs.koodous.com/api/apks.html)               | `koodous`        | SHA256                                    |      | Android apps only ; no downloads with the free plan    |
 | [Maldatabase](https://maldatabase.com/api-doc.html)             | `maldatabase`    |                                           | ✓    |                                                        |
 | [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)  | `malpedia`       | MD5, SHA256                               |      |                                                        |
-| [MalShare](https://malshare.com/doc.php)                        | `malshare`       | MD5, SHA1, SHA256                         |      |                                                        |
-| [Malware Bazaar](https://bazaar.abuse.ch/api)                   | `malwarebazaar`  | SHA256                                    |      | at most 2000 downloads per day                         |
+| [MalShare](https://malshare.com/doc.php)                        | `malshare`       | MD5, SHA1, SHA256                         | ✓    |                                                        |
+| [Malware Bazaar](https://bazaar.abuse.ch/api)                   | `malwarebazaar`  | MD5, SHA1, SHA256                         | ✓    | at most 2000 downloads per day                         |
 | [Malware-Feed](https://github.com/MalwareSamples/Malware-Feed)  | `malwarefeed`    | SHA256                                    | ✓    | uses a GitHub token instead of an API key              |
 | [MetaDefender](https://docs.opswat.com/mdcloud)                 | `metadefender`   | MD5, SHA1, SHA256                         | ✓    | downloads for malware exchange partners only           |
 | [PolySwarm](https://github.com/polyswarm/polyswarm-api)         | `polyswarm`      | MD5, SHA1, SHA256                         |      |                                                        |
