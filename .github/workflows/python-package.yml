@@ -9,11 +9,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  actions: write
-  id-token: write # for OIDC
-  contents: read
-
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -93,19 +88,28 @@ jobs:
         github_token: ${{ secrets.github_token }}
         branch: ${{ github.ref }}
   deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs: [prepare, coverage]
+    needs: [prepare, build]
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      package: ${{ needs.prepare.outputs.package }}
     steps:
     - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-    - name: Check for version change
-      uses: dorny/paths-filter@v4
+    - name: Check if version is already on PyPI
       id: filter
-      with:
-        filters: |
-          version:
-            - '**/VERSION.txt'
+      run: |
+        version="$(tr -d '[:space:]' < src/$package/VERSION.txt)"
+        code="$(curl -s -o /dev/null -w '%{http_code}' https://pypi.org/pypi/$package/$version/json)"
+        echo "Local version: $version (PyPI HTTP status: $code)"
+        case "$code" in
+          200) echo "version=false" >> $GITHUB_OUTPUT ;;
+          404) echo "version=true" >> $GITHUB_OUTPUT ;;
+          *) echo "Unexpected response from PyPI" && exit 1 ;;
+        esac
     - if: steps.filter.outputs.version == 'true'
       name: Cleanup README
       run: |
@@ -113,7 +117,7 @@ jobs:
         awk '{if (match($0,"## Supporters")) exit; print}' README.md > README
         mv -f README README.md
     - if: steps.filter.outputs.version == 'true'
-      name: Build ${{ needs.prepare.outputs.package }} package
+      name: Build ${{ env.package }} package
       run: python3 -m pip install --upgrade build && python3 -m build
     - if: steps.filter.outputs.version == 'true'
       name: Publish to PyPI
