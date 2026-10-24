@@ -13,6 +13,7 @@
 This library communicates with API's of the following malware databases to collect malware samples:
 
 - [AndroZoo](https://androzoo.uni.lu/api_doc)
+- [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)
 - [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
 - [MalShare](https://malshare.com/doc.php)
 - [Malware Bazaar](https://bazaar.abuse.ch/api)
@@ -24,6 +25,7 @@ This library communicates with API's of the following malware databases to colle
 
 This library also communicates with API's or websites of the following repositories to get sample hash feeds:
 
+- [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)
 - [Maldatabase](https://maldatabase.com/api-doc.html)
 - [URLhaus](https://urlhaus-api.abuse.ch)
 
