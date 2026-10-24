@@ -60,11 +60,9 @@ def main():
     extra.add_argument("-v", "--verbose", action="store_true", help="display debug information (default: False)")
     args = _setup(parser)
     if args.from_file is not None:
-        with open(args.from_file) as f:
-            for h in f.readlines():
-                args.sample_hash.append(_valid_hash(h.strip()))
+        args.sample_hash.extend(args.from_file)
     if args.from_malware_feed:
-        for h in get_samples_feed():
+        for h in get_samples_feed(**vars(args)) or []:
             args.sample_hash.append(_valid_hash(h.strip()))
     makedirs(args.output_dir, exist_ok=True)
     if len(args.sample_hash) > 0:

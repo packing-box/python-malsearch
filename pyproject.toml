@@ -54,9 +54,9 @@ content-type = "text/markdown"
 
 [project.urls]
 documentation = "https://python-malsearch.readthedocs.io/en/latest/?badge=latest"
-homepage = "https://github.com/dhondta/python-malsearch"
-issues = "https://github.com/dhondta/python-malsearch/issues"
-repository = "https://github.com/dhondta/python-malsearch"
+homepage = "https://github.com/packing-box/python-malsearch"
+issues = "https://github.com/packing-box/python-malsearch/issues"
+repository = "https://github.com/packing-box/python-malsearch"
 
 [project.scripts]
 malsearch = "malsearch.__main__:main"

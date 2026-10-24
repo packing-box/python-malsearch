@@ -166,7 +166,7 @@ class API(_Base):
                             self._config.write(f)
                     logger.warning(f"{self.name} raised 403 (Forbidden) and was disabled ; check out your API key")
             elif r.status_code == 404:
-                raise HashNotFoundError(self.hash, self.__class__.__name__)
+                raise HashNotFoundError(getattr(self, "hash", path), self.__class__.__name__)
             elif 500 <= r.status_code < 600:
                 raise ServiceUnavailable(self.__class__.__name__, f"{r.status_code} - {r.reason}")
             else:

@@ -10,7 +10,7 @@ from .clients.__common__ import _valid_hash
 __all__ = ["download_sample", "download_samples", "get_samples_feed"] + _clients
 
 _CLIENTS_MAP = {n.lower(): globals()[n] for n in _clients}
-_MAX_WORKERS = 3 * cpu_count()
+_MAX_WORKERS = 3 * (cpu_count() or 1)
 
 logger = logging.getLogger("malsearch")
 
