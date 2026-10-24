@@ -12,6 +12,7 @@
 
 This library communicates with API's of the following malware databases to collect malware samples:
 
+- [AndroZoo](https://androzoo.uni.lu/api_doc)
 - [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
 - [MalShare](https://malshare.com/doc.php)
 - [Malware Bazaar](https://bazaar.abuse.ch/api)
