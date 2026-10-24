@@ -14,6 +14,7 @@ This library communicates with the APIs of the following malware databases to do
 
 | Service                                                         | Name in config   | Download by                               | Feed | Notes                                                  |
 |:----------------------------------------------------------------|:-----------------|:------------------------------------------|:----:|:-------------------------------------------------------|
+| [ANY.RUN](https://any.run/api-documentation/)                   | `anyrun`         | MD5, SHA1, SHA256                         |      | requires a TI Lookup license                           |
 | [AndroZoo](https://androzoo.uni.lu/api_doc)                     | `androzoo`       | SHA256                                    |      | Android apps only ; API key granted on request         |
 | [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)      | `hybridanalysis` | SHA256                                    | ✓    | downloading requires a vetted account                  |
 | [Joe Sandbox](https://github.com/joesecurity/jbxapi)            | `joesandbox`     | MD5, SHA1, SHA256                         |      | downloading may require a Cloud Pro account            |
@@ -46,6 +47,7 @@ MalSearch reads the API keys from an INI configuration file, by default `~/.mals
 ```ini
 [API keys]
 androzoo = YOUR-KEY
+anyrun = YOUR-KEY
 hybridanalysis = YOUR-KEY
 joesandbox = YOUR-KEY
 koodous = YOUR-TOKEN

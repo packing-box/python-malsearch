@@ -3,6 +3,7 @@
 MalSearch is a library that allows to collect malware samples from multiple malware databases using their API's. It relies on:
 
 - [AndroZoo](https://androzoo.uni.lu/api_doc)
+- [ANY.RUN](https://any.run/api-documentation/)
 - [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)
 - [Joe Sandbox](https://github.com/joesecurity/jbxapi)
 - [Koodous](https://docs.koodous.com/api/apks.html)
