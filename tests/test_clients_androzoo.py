@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from unittest import mock, TestCase
 
 from malsearch import download_sample, AndroZoo
+from malsearch.clients.__common__ import API
 
 
 API_KEY = "s3cr3t-k3y"
@@ -25,6 +26,7 @@ def _response(content=b"", status=200, reason="OK"):
 
 class TestAndroZoo(TestCase):
     def setUp(self):
+        API._disabled.clear()
         self._tmp = TemporaryDirectory()
         self.tmp = self._tmp.name
 

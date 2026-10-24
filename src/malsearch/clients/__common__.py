@@ -21,7 +21,7 @@ def _hash_type(hash, *types):
 def _valid_hash(hash, *types):
     import re
     pattern = "|".join(f"[0-9a-f]{{{_HASHTYPES_MAP[t]}}}" for t in (types or _HASHTYPES_MAP.keys()))
-    if re.match(r"{}".format(f"^{pattern}$"), hash, re.I) is None:
+    if re.fullmatch(f"(?:{pattern})", hash, re.I) is None:
         raise ValueError("hash type not supported")
     return hash.lower()
 
@@ -132,16 +132,40 @@ class _Base:
 
 
 class API(_Base):
+    _disabled = {}
     _invalid_key = lambda s, r: r.status_code == 403
     _missing_key = set()
     
+    def __disable(self, seconds, reason, hint=""):
+        """ Disable the client for the given number of seconds, in memory (so that requests already in progress stop
+             too) and in the configuration file if any (so that it persists across runs). """
+        import datetime as dt
+        from contextlib import nullcontext
+        now = dt.datetime.now()
+        until = now + dt.timedelta(seconds=seconds)
+        with getattr(self, "_lock", None) or nullcontext():
+            first = API._disabled.get(self.name, now) <= now
+            API._disabled[self.name] = until
+            if hasattr(self, "_config"):
+                if not self._config.has_section("Disabled"):
+                    self._config.add_section("Disabled")
+                self._config['Disabled'][self.name] = dt.datetime.strftime(until, "%d/%m/%Y %H:%M:%S")
+                with open(self._config.path, 'w') as f:
+                    self._config.write(f)
+        if first:
+            logger.warning(f"{self.name} {reason} and was disabled until {until:%d/%m/%Y %H:%M:%S}{hint}")
+        raise ServiceUnavailable(self.__class__.__name__, reason)
+    
     def __request(self, path, **kwargs):
+        import datetime as dt
         from requests import exceptions, get, post
         if not getattr(self, "_api_key", None):
             if self.name not in API._missing_key:
                 API._missing_key.add(self.name)
                 logger.warning(f"Did you forget to set up the API key for client '{self.name}' ?")
             raise ServiceUnavailable(self.__class__.__name__, "no API key")
+        if (until := API._disabled.get(self.name)) and until > dt.datetime.now():
+            raise ServiceUnavailable(self.__class__.__name__, f"disabled until {until:%d/%m/%Y %H:%M:%S}")
         if not getattr(self, "_pre_condition", lambda: True)():
             raise HashNotFoundError(self.hash, self.__class__.__name__)
         for i in ["headers", "params"]:
@@ -164,20 +188,16 @@ class API(_Base):
             r.raise_for_status()
             self.content = r.content
         except exceptions.RequestException as e:
-            if self._invalid_key(r):
-                import datetime as dt
-                from contextlib import nullcontext
-                if hasattr(self, "_config"):
-                    with getattr(self, "_lock", None) or nullcontext():
-                        if not self._config.has_section("Disabled"):
-                            self._config.add_section("Disabled")
-                        boff = dt.timedelta(seconds=getattr(self, "backoff", _MIN_BACKOFF))
-                        self._config['Disabled'][self.name] = dt.datetime.strftime(dt.datetime.now() + boff,
-                                                                                   "%d/%m/%Y %H:%M:%S")
-                        with open(self._config.path, 'w') as f:
-                            self._config.write(f)
-                    logger.warning(f"{self.name} rejected the API key ({r.status_code} - {r.reason}) and was disabled ; "
-                                   "check out your API key")
+            if r.status_code == 429:
+                # wait as long as the service asks (Retry-After in seconds) if it says so
+                try:
+                    seconds = int(r.headers.get('Retry-After'))
+                except (TypeError, ValueError):
+                    seconds = getattr(self, "backoff", _MIN_BACKOFF)
+                self.__disable(seconds, f"hit its rate limit or quota ({r.status_code} - {r.reason})")
+            elif self._invalid_key(r):
+                self.__disable(getattr(self, "backoff", _MIN_BACKOFF),
+                               f"rejected the API key ({r.status_code} - {r.reason})", " ; check out your API key")
             elif r.status_code == 404:
                 raise HashNotFoundError(getattr(self, "hash", path), self.__class__.__name__)
             elif 500 <= r.status_code < 600:

@@ -16,6 +16,7 @@ This library communicates with API's of the following malware databases to colle
 - [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
 - [MalShare](https://malshare.com/doc.php)
 - [Malware Bazaar](https://bazaar.abuse.ch/api)
+- [PolySwarm](https://github.com/polyswarm/polyswarm-api)
 - [Triage](https://tria.ge/docs)
 - [VirusShare](https://virusshare.com/apiv2_reference)
 - [VirusTotal](https://docs.virustotal.com/reference/overview)
