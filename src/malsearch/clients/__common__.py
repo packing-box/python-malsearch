@@ -98,6 +98,32 @@ class _Base:
             logger.exception(e)
         return self
     
+    def _extract(self, *passwords):
+        """ Keep the file of the archive that matches the hash of the sample, if the content is an archive that is not
+             the sample itself (e.g. an APK). """
+        import hashlib
+        import zlib
+        from io import BytesIO
+        from pyzipper import AESZipFile, BadZipFile
+        htype = _hash_type(self.hash)
+        if hashlib.new(htype, self.content).hexdigest() == self.hash or self.content[:2] != b"PK":
+            return self
+        try:
+            # AESZipFile also reads regular archives
+            with AESZipFile(BytesIO(self.content)) as z:
+                for name in z.namelist():
+                    for pwd in (None, ) + passwords:
+                        try:
+                            data = z.read(name, pwd=pwd)
+                        except (BadZipFile, NotImplementedError, RuntimeError, zlib.error):
+                            continue
+                        if hashlib.new(htype, data).hexdigest() == self.hash:
+                            self.content = data
+                            return self
+        except BadZipFile:
+            pass
+        return self
+    
     def _save(self, filename=None):
         from os.path import join
         try:
@@ -189,11 +215,11 @@ class API(_Base):
             for k, v in getattr(self, f"_{i}", {}).items():
                 kwargs[i] = kwargs[i] or {}
                 kwargs[i].setdefault(k, v)
-            if n := getattr(self, f"_api_key_{i.rstrip('s')}", None):
+            if (n := getattr(self, f"_api_key_{i.rstrip('s')}", None)) and getattr(self, "_api_key", None):
                 d = kwargs.pop(i, {}) or {}
                 d[n] = self._api_key
                 kwargs[i] = d
-        if n := getattr(self, "_auth_method", None):
+        if (n := getattr(self, "_auth_method", None)) and getattr(self, "_api_key", None):
             kwargs['headers'] = kwargs['headers'] or {}
             kwargs['headers']['Authorization'] = f"{n} {self._api_key}"
         # never check a response against the JSON of a previous one

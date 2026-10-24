@@ -85,6 +85,18 @@ class TestSorel20M(TestCase):
         self.assertTrue(c._postcheck)
         self.assertEqual(self._read(h), disarmed)
 
+    def test_cannot_rearm_cases(self):
+        # not a PE, header fields not zeroed, truncated header, unknown optional header magic
+        pe = _pe(0, 0)
+        for data in [b"\x7fELF not a PE", _pe(0x14c, 0), _pe(0, 2), pe[:0x40] + b"PE\0\0" + b"\0" * 4,
+                     b"MZ" + b"\0" * 10, _pe(0, 0, magic=0x107)]:
+            h = hashlib.sha256(data + b"original").hexdigest()
+            with mock.patch("requests.get", return_value=_response(zlib.compress(data))), \
+                 self.assertLogs("malsearch", "WARNING") as logs:
+                Sorel20M(output_dir=self.tmp).get_file_by_hash(h)
+            self.assertIn("saved disarmed", logs.output[0])
+            self.assertEqual(self._read(h), data)
+
     def test_hash_not_found(self):
         h = "0" * 64
         with mock.patch("requests.get", return_value=_response(b"<Error><Code>NoSuchKey</Code></Error>", 404,

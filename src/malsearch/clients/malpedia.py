@@ -12,6 +12,6 @@ class Malpedia(API):
     
     @hashtype("md5", "sha256")
     def get_file_by_hash(self, hash):
-        self._get(f"get/sample/{hash}/zip")._save()
-        #TODO: parse ZIP for unpacked version
+        # password-protected archive with the sample and possibly its unpacked or dumped files
+        self._get(f"get/sample/{hash}/zip")._extract(b"infected")._save()
 

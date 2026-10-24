@@ -120,6 +120,33 @@ class TestUnpacMe(TestCase):
             UnpacMe(api_key=API_KEY, output_dir=self.tmp, unpacked=True).get_file_by_hash(HASH)
         self.assertTrue(os.path.exists(os.path.join(self.tmp, HASH)))
     
+    def test_download_not_zipped(self):
+        # the link may give the file itself
+        with mock.patch("requests.post", return_value=_json({'token': "tok"})), \
+             mock.patch("requests.get", side_effect=[_json({'download_url': LINK}), _response(DATA)]):
+            UnpacMe(api_key=API_KEY, output_dir=self.tmp).get_file_by_hash(HASH)
+        with open(os.path.join(self.tmp, HASH), 'rb') as f:
+            self.assertEqual(f.read(), DATA)
+
+    def test_download_link_failure(self):
+        with mock.patch("requests.post", return_value=_json({'token': "tok"})), \
+             mock.patch("requests.get", side_effect=[_json({'download_url': LINK}), _response(b"", 403, "Forbidden")]):
+            self.assertRaises(ServiceUnavailable, UnpacMe(api_key=API_KEY, output_dir=self.tmp).get_file_by_hash, HASH)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, HASH)))
+
+    def test_download_unpacked_no_analysis(self):
+        # no analysis where the sample was submitted, or the search fails: the sample is downloaded anyway
+        terms = _json({'search_terms': [{'term': "sha256"}]})
+        for search in [_json({'results': [{'analysis': [{'id': "other", 'submission_sha256': "f" * 64}]}]}),
+                       _response(b"", 503, "Service Unavailable")]:
+            with mock.patch("requests.post", side_effect=[search, _json({'token': "tok"})]) as post, \
+                 mock.patch("requests.get", side_effect=[terms, _json({'download_url': LINK}),
+                                                         _response(_zip((HASH, DATA)))]):
+                UnpacMe(api_key=API_KEY, output_dir=self.tmp, unpacked=True, overwrite=True).get_file_by_hash(HASH)
+            self.assertEqual(post.call_count, 2)
+            with open(os.path.join(self.tmp, HASH), 'rb') as f:
+                self.assertEqual(f.read(), DATA)
+
     def test_hash_not_found(self):
         # no token
         with mock.patch("requests.post", return_value=_json({})), mock.patch("requests.get") as get:

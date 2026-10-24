@@ -24,8 +24,8 @@ def _cache_file():
 def _members(content, password):
     """ Yield the files of an archive, encrypted (ZipCrypto or AES) or not. """
     import io
-    import zipfile
-    from pyzipper import AESZipFile
+    # pyzipper's BadZipFile is not zipfile's
+    from pyzipper import AESZipFile, BadZipFile
     # AESZipFile also reads regular archives
     with AESZipFile(io.BytesIO(content)) as z:
         for info in z.infolist():
@@ -35,7 +35,7 @@ def _members(content, password):
                 try:
                     yield info.filename, z.read(info, pwd=pwd)
                     break
-                except (RuntimeError, NotImplementedError, zipfile.BadZipFile):
+                except (RuntimeError, NotImplementedError, BadZipFile):
                     continue
 
 

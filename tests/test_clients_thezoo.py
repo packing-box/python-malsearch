@@ -5,6 +5,7 @@ import io
 import json
 import os
 import sqlite3
+import sys
 from pyzipper import AESZipFile, WZ_AES, ZIP_DEFLATED
 from requests import Response
 from tempfile import TemporaryDirectory
@@ -190,3 +191,35 @@ class TestTheZoo(TestCase):
         with mock.patch("requests.get") as get:
             self.assertRaises(ValueError, TheZoo().get_file_by_hash, "0" * 128)
         get.assert_not_called()
+
+    def test_archive_changed(self):
+        # the archive changed since it was indexed: the sample is not in it anymore
+        repo = FakeRepo()
+        h = hashlib.sha256(SAMPLES['Linux.Bar']['bar.elf']).hexdigest()
+        with mock.patch("requests.get", side_effect=repo.get):
+            TheZoo()._index()
+            repo.files["malware/Binaries/Linux.Bar/linux.bar.zip"] = _zip({"bar.elf": b"other"}, "pass-linux.bar")
+            self.assertRaises(HashNotFoundError, TheZoo(output_dir=self.tmp).get_file_by_hash, h)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, h)))
+
+    def test_members(self):
+        # folders are skipped, as well as corrupted files, while the other files are still read
+        with io.BytesIO() as buffer:
+            with AESZipFile(buffer, 'w', compression=ZIP_DEFLATED, encryption=WZ_AES) as z:
+                z.setpassword(b"pwd")
+                z.writestr("folder/", b"")
+                z.writestr("folder/broken", b"MZ broken")
+                z.writestr("folder/sample", b"MZ sample")
+            content = bytearray(buffer.getvalue())
+        # corrupt the encrypted data of the first file (its authentication code then mismatches)
+        i = content.index(b"folder/broken") + len(b"folder/broken") + 11 + 20
+        content[i] ^= 0xff
+        self.assertEqual(list(thezoo._members(bytes(content), "pwd")), [("folder/sample", b"MZ sample")])
+
+
+class TestCacheFile(TestCase):
+    def test_cache_file(self):
+        with mock.patch.dict(sys.modules, {'platformdirs': mock.Mock(user_cache_dir=lambda n: f"/cache/{n}")}):
+            self.assertEqual(thezoo._cache_file(), "/cache/malsearch/thezoo.json")
+        with mock.patch.dict(sys.modules, {'platformdirs': None}):
+            self.assertEqual(thezoo._cache_file(), os.path.expanduser("~/.cache/malsearch/thezoo.json"))
