@@ -22,6 +22,9 @@ def _server_message(response):
     """ Get the error message from a JSON response, if any (e.g. "Invalid API key", "unknown_auth_key"). """
     try:
         data = response.json()
+        # e.g. {"errors": [{"code": 4, "message": "Invalid API key"}]}
+        if isinstance(errors := data.get('errors'), list) and len(errors) > 0 and isinstance(errors[0], dict):
+            data = errors[0]
         return next(v for k in ["message", "error", "detail", "result", "query_status"] if isinstance(v := data.get(k), str))
     except Exception:
         return

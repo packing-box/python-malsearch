@@ -10,25 +10,26 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/packing-box/python-malsearch/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/packing-box/python-malsearch?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
 
-This library communicates with API's of the following malware databases to collect malware samples:
+This library communicates with the APIs of the following malware databases to download samples by hash and, for some of them, to get feeds of recent sample hashes:
 
-- [AndroZoo](https://androzoo.uni.lu/api_doc)
-- [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)
-- [Koodous](https://docs.koodous.com/api/apks.html)
-- [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
-- [MalShare](https://malshare.com/doc.php)
-- [Malware Bazaar](https://bazaar.abuse.ch/api)
-- [PolySwarm](https://github.com/polyswarm/polyswarm-api)
-- [Triage](https://tria.ge/docs)
-- [URLhaus](https://urlhaus-api.abuse.ch)
-- [VirusShare](https://virusshare.com/apiv2_reference)
-- [VirusTotal](https://docs.virustotal.com/reference/overview)
+| Service                                                         | Name in config   | Download by                               | Feed | Notes                                                  |
+|:----------------------------------------------------------------|:-----------------|:------------------------------------------|:----:|:-------------------------------------------------------|
+| [AndroZoo](https://androzoo.uni.lu/api_doc)                     | `androzoo`       | SHA256                                    |      | Android apps only ; API key granted on request         |
+| [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)      | `hybridanalysis` | SHA256                                    | ✓    | downloading requires a vetted account                  |
+| [Joe Sandbox](https://github.com/joesecurity/jbxapi)            | `joesandbox`     | MD5, SHA1, SHA256                         |      | downloading may require a Cloud Pro account            |
+| [Koodous](https://docs.koodous.com/api/apks.html)               | `koodous`        | SHA256                                    |      | Android apps only ; no downloads with the free plan    |
+| [Maldatabase](https://maldatabase.com/api-doc.html)             | `maldatabase`    |                                           | ✓    |                                                        |
+| [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)  | `malpedia`       | MD5, SHA256                               |      |                                                        |
+| [MalShare](https://malshare.com/doc.php)                        | `malshare`       | MD5, SHA1, SHA256                         |      |                                                        |
+| [Malware Bazaar](https://bazaar.abuse.ch/api)                   | `malwarebazaar`  | SHA256                                    |      | at most 2000 downloads per day                         |
+| [Malware-Feed](https://github.com/MalwareSamples/Malware-Feed)  | `malwarefeed`    | SHA256                                    | ✓    | uses a GitHub token instead of an API key              |
+| [PolySwarm](https://github.com/polyswarm/polyswarm-api)         | `polyswarm`      | MD5, SHA1, SHA256                         |      |                                                        |
+| [Triage](https://tria.ge/docs)                                  | `triage`         | MD5, SHA1, SHA256, SHA512                 |      |                                                        |
+| [URLhaus](https://urlhaus-api.abuse.ch)                         | `urlhaus`        | SHA256                                    | ✓    | same Auth-Key as the other abuse.ch services           |
+| [VirusShare](https://virusshare.com/apiv2_reference)            | `virusshare`     | MD5, SHA1, SHA224, SHA256, SHA384, SHA512 |      |                                                        |
+| [VirusTotal](https://docs.virustotal.com/reference/overview)    | `virustotal`     | MD5, SHA1, SHA256                         |      | downloading requires a premium API key ; supports `-u` |
 
-This library also communicates with API's or websites of the following repositories to get sample hash feeds:
-
-- [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)
-- [Maldatabase](https://maldatabase.com/api-doc.html)
-- [URLhaus](https://urlhaus-api.abuse.ch)
+A service is only asked for the hash types it supports.
 
 
 ```sh
@@ -39,12 +40,14 @@ pip install malsearch
 
 ### Configuration
 
-MalSearch reads the API keys from an INI configuration file, by default `~/.malsearch.conf`. Each key is set in the `API keys` section under the client's name in lowercase; only the clients listed there are used.
+MalSearch reads the API keys from an INI configuration file, by default `~/.malsearch.conf`. Each key is set in the `API keys` section under the client's name from the table above; only the clients listed there are used, except a client named with `--select`, which gets a warning if its key is missing.
 
 ```ini
 [API keys]
 androzoo = YOUR-KEY
 hybridanalysis = YOUR-KEY
+joesandbox = YOUR-KEY
+koodous = YOUR-TOKEN
 maldatabase = YOUR-KEY
 malpedia = YOUR-KEY
 malshare = YOUR-KEY
@@ -65,7 +68,8 @@ When a service hits its rate limit or rejects its API key, MalSearch disables th
 # download a sample (MD5, SHA1, SHA224, SHA256, SHA384 or SHA512) to the current directory
 malsearch 2037f9b7dd268eef7d2e950b27c6cf80e3ba692d262c785ab67b04dc71c99bf9
 
-# only query some clients (or exclude some with --skip)
+# only query some clients (or exclude some with --skip) ; put the hashes first, as --select and --skip take all
+#  the names that follow them
 malsearch 094fd325049b8a9cf6d3e5ef2a6d4cc6a567d7d49c35f8bb8dd9e3c6acf3d78d --select malwarebazaar virustotal
 
 # download every hash from a newline-separated list into the "samples" folder, without the requests cache
@@ -83,7 +87,7 @@ malsearch -m -o samples
 | `-o`, `--output-dir DIR`        | output directory for downloaded samples (default: `.`)                                |
 | `--select NAME [NAME ...]`      | only use the given clients                                                            |
 | `--skip NAME [NAME ...]`        | do not use the given clients                                                          |
-| `-u`, `--unpacked`              | also download the unpacked version of a packed sample, when one is available          |
+| `-u`, `--unpacked`              | also download the unpacked version of a packed sample, when available (VirusTotal)    |
 | `--disable-cache`               | disable the requests cache (responses are otherwise cached for one day)               |
 | `-v`, `--verbose`               | display debug information                                                             |
 
