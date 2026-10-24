@@ -18,12 +18,14 @@ This library communicates with API's of the following malware databases to colle
 - [Malware Bazaar](https://bazaar.abuse.ch/api)
 - [PolySwarm](https://github.com/polyswarm/polyswarm-api)
 - [Triage](https://tria.ge/docs)
+- [URLhaus](https://urlhaus-api.abuse.ch)
 - [VirusShare](https://virusshare.com/apiv2_reference)
 - [VirusTotal](https://docs.virustotal.com/reference/overview)
 
 This library also communicates with API's or websites of the following repositories to get sample hash feeds:
 
 - [Maldatabase](https://maldatabase.com/api-doc.html)
+- [URLhaus](https://urlhaus-api.abuse.ch)
 
 
 ```sh
