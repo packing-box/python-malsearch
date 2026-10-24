@@ -24,6 +24,7 @@ This library communicates with the APIs of the following malware databases to do
 | [MalShare](https://malshare.com/doc.php)                        | `malshare`       | MD5, SHA1, SHA256                         |      |                                                        |
 | [Malware Bazaar](https://bazaar.abuse.ch/api)                   | `malwarebazaar`  | SHA256                                    |      | at most 2000 downloads per day                         |
 | [Malware-Feed](https://github.com/MalwareSamples/Malware-Feed)  | `malwarefeed`    | SHA256                                    | ✓    | uses a GitHub token instead of an API key              |
+| [MetaDefender](https://docs.opswat.com/mdcloud)                 | `metadefender`   | MD5, SHA1, SHA256                         | ✓    | downloads for malware exchange partners only           |
 | [PolySwarm](https://github.com/polyswarm/polyswarm-api)         | `polyswarm`      | MD5, SHA1, SHA256                         |      |                                                        |
 | [SOREL-20M](https://github.com/sophos/SOREL-20M)                | `sorel20m`       | SHA256                                    |      | no API key ; Windows PE only (static dataset, 2020)    |
 | [Triage](https://tria.ge/docs)                                  | `triage`         | MD5, SHA1, SHA256, SHA512                 |      |                                                        |
@@ -57,6 +58,7 @@ malpedia = YOUR-KEY
 malshare = YOUR-KEY
 malwarebazaar = YOUR-KEY
 malwarefeed = YOUR-GITHUB-TOKEN
+metadefender = YOUR-KEY
 polyswarm = YOUR-KEY
 sorel20m = 
 triage = YOUR-KEY

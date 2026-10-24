@@ -25,6 +25,11 @@ def _server_message(response):
         # e.g. {"errors": [{"code": 4, "message": "Invalid API key"}]}
         if isinstance(errors := data.get('errors'), list) and len(errors) > 0 and isinstance(errors[0], dict):
             data = errors[0]
+        # e.g. {"error": {"code": 401000, "messages": ["Unauthorized"]}}
+        if isinstance(error := data.get('error'), dict):
+            data = error
+        if isinstance(messages := data.get('messages'), list) and len(messages) > 0 and isinstance(messages[0], str):
+            return messages[0]
         return next(v for k in ["message", "description", "error", "detail", "result", "query_status"] if isinstance(v := data.get(k), str))
     except Exception:
         return
