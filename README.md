@@ -25,6 +25,7 @@ This library communicates with the APIs of the following malware databases to do
 | [Malware-Feed](https://github.com/MalwareSamples/Malware-Feed)  | `malwarefeed`    | SHA256                                    | ✓    | uses a GitHub token instead of an API key              |
 | [PolySwarm](https://github.com/polyswarm/polyswarm-api)         | `polyswarm`      | MD5, SHA1, SHA256                         |      |                                                        |
 | [Triage](https://tria.ge/docs)                                  | `triage`         | MD5, SHA1, SHA256, SHA512                 |      |                                                        |
+| [UnpacMe](https://api.unpac.me)                                 | `unpacme`        | SHA256                                    | ✓    | paid plan ; monthly download limit ; supports `-u`     |
 | [URLhaus](https://urlhaus-api.abuse.ch)                         | `urlhaus`        | SHA256                                    | ✓    | same Auth-Key as the other abuse.ch services           |
 | [VirusShare](https://virusshare.com/apiv2_reference)            | `virusshare`     | MD5, SHA1, SHA224, SHA256, SHA384, SHA512 |      |                                                        |
 | [VirusTotal](https://docs.virustotal.com/reference/overview)    | `virustotal`     | MD5, SHA1, SHA256                         |      | downloading requires a premium API key ; supports `-u` |
@@ -55,6 +56,7 @@ malwarebazaar = YOUR-KEY
 malwarefeed = YOUR-GITHUB-TOKEN
 polyswarm = YOUR-KEY
 triage = YOUR-KEY
+unpacme = YOUR-KEY
 urlhaus = YOUR-KEY
 virusshare = YOUR-KEY
 virustotal = YOUR-KEY
@@ -87,7 +89,7 @@ malsearch -m -o samples
 | `-o`, `--output-dir DIR`        | output directory for downloaded samples (default: `.`)                                |
 | `--select NAME [NAME ...]`      | only use the given clients                                                            |
 | `--skip NAME [NAME ...]`        | do not use the given clients                                                          |
-| `-u`, `--unpacked`              | also download the unpacked version of a packed sample, when available (VirusTotal)    |
+| `-u`, `--unpacked`              | also download the unpacked versions of a packed sample (VirusTotal, UnpacMe)          |
 | `--disable-cache`               | disable the requests cache (responses are otherwise cached for one day)               |
 | `-v`, `--verbose`               | display debug information                                                             |
 
