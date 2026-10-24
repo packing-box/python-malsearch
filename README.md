@@ -14,6 +14,7 @@ This library communicates with API's of the following malware databases to colle
 
 - [AndroZoo](https://androzoo.uni.lu/api_doc)
 - [Hybrid Analysis](https://hybrid-analysis.com/docs/api/v2)
+- [Koodous](https://docs.koodous.com/api/apks.html)
 - [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/usage/api)
 - [MalShare](https://malshare.com/doc.php)
 - [Malware Bazaar](https://bazaar.abuse.ch/api)
@@ -36,7 +37,81 @@ pip install malsearch
 
 ## :sunglasses: Usage
 
-TODO
+### Configuration
+
+MalSearch reads the API keys from an INI configuration file, by default `~/.malsearch.conf`. Each key is set in the `API keys` section under the client's name in lowercase; only the clients listed there are used.
+
+```ini
+[API keys]
+androzoo = YOUR-KEY
+hybridanalysis = YOUR-KEY
+maldatabase = YOUR-KEY
+malpedia = YOUR-KEY
+malshare = YOUR-KEY
+malwarebazaar = YOUR-KEY
+malwarefeed = YOUR-GITHUB-TOKEN
+polyswarm = YOUR-KEY
+triage = YOUR-KEY
+urlhaus = YOUR-KEY
+virusshare = YOUR-KEY
+virustotal = YOUR-KEY
+```
+
+When a service hits its rate limit or rejects its API key, MalSearch disables that client for a while. It records this in a `Disabled` section of the same file, with an expiration date (`DD/MM/YYYY HH:MM:SS`), and re-enables the client automatically once that date has passed. You can also add an entry yourself to disable a client temporarily. An entry whose value is not a date disables the client until you remove it.
+
+### Command line
+
+```sh
+# download a sample (MD5, SHA1, SHA224, SHA256, SHA384 or SHA512) to the current directory
+malsearch 2037f9b7dd268eef7d2e950b27c6cf80e3ba692d262c785ab67b04dc71c99bf9
+
+# only query some clients (or exclude some with --skip)
+malsearch 094fd325049b8a9cf6d3e5ef2a6d4cc6a567d7d49c35f8bb8dd9e3c6acf3d78d --select malwarebazaar virustotal
+
+# download every hash from a newline-separated list into the "samples" folder, without the requests cache
+malsearch -f hashes.txt -o samples --disable-cache
+
+# download the latest samples published by the hash feeds
+malsearch -m -o samples
+```
+
+| Option                          | Description                                                                           |
+|:--------------------------------|:--------------------------------------------------------------------------------------|
+| `-f`, `--from-file FILE`        | read hashes from a file (one per line)                                                |
+| `-m`, `--from-malware-feed`     | get hashes from the malware feeds                                                     |
+| `-c`, `--config FILE`           | INI configuration file (default: `~/.malsearch.conf`)                                 |
+| `-o`, `--output-dir DIR`        | output directory for downloaded samples (default: `.`)                                |
+| `--select NAME [NAME ...]`      | only use the given clients                                                            |
+| `--skip NAME [NAME ...]`        | do not use the given clients                                                          |
+| `-u`, `--unpacked`              | also download the unpacked version of a packed sample, when one is available          |
+| `--disable-cache`               | disable the requests cache (responses are otherwise cached for one day)               |
+| `-v`, `--verbose`               | display debug information                                                             |
+
+Each sample is saved under its hash as the filename, and samples that already exist in the output directory are skipped. For each hash, the clients are tried in turn until one returns the sample. Several hashes are downloaded in parallel, with a progress bar if [`tqdm`](https://pypi.org/project/tqdm/) is installed.
+
+### Python
+
+The same features are available from Python. Unlike the command line, the functions below do not create the output directory, so make sure it exists first:
+
+```python
+from malsearch import download_samples, get_samples_feed
+
+# download samples, using the same options as on the command line
+download_samples("2037f9b7dd268eef7d2e950b27c6cf80e3ba692d262c785ab67b04dc71c99bf9",
+                 config="~/.malsearch.conf", output_dir="samples", select=["malwarebazaar", "virustotal"])
+
+# iterate over the hashes from the malware feeds
+for h in get_samples_feed(config="~/.malsearch.conf"):
+    print(h)
+```
+
+You can also use a single client directly:
+
+```python
+from malsearch import MalwareBazaar
+
+MalwareBazaar(api_key="YOUR-KEY", output_dir="samples").get_file_by_hash("2037f9b7dd268eef7d2e950b27c6cf80e3ba692d262c785ab67b04dc71c99bf9")
+```
 
 
 ## :clap:  Supporters

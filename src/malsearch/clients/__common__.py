@@ -18,6 +18,15 @@ def _hash_type(hash, *types):
         pass
 
 
+def _server_message(response):
+    """ Get the error message from a JSON response, if any (e.g. "Invalid API key", "unknown_auth_key"). """
+    try:
+        data = response.json()
+        return next(v for k in ["message", "error", "detail", "result", "query_status"] if isinstance(v := data.get(k), str))
+    except Exception:
+        return
+
+
 def _valid_hash(hash, *types):
     import re
     pattern = "|".join(f"[0-9a-f]{{{_HASHTYPES_MAP[t]}}}" for t in (types or _HASHTYPES_MAP.keys()))
@@ -196,8 +205,9 @@ class API(_Base):
                     seconds = getattr(self, "backoff", _MIN_BACKOFF)
                 self.__disable(seconds, f"hit its rate limit or quota ({r.status_code} - {r.reason})")
             elif self._invalid_key(r):
+                msg = f" ; server said: {m}" if (m := _server_message(r)) else ""
                 self.__disable(getattr(self, "backoff", _MIN_BACKOFF),
-                               f"rejected the API key ({r.status_code} - {r.reason})", " ; check out your API key")
+                               f"rejected the API key ({r.status_code} - {r.reason})", f" ; check out your API key{msg}")
             elif r.status_code == 404:
                 raise HashNotFoundError(getattr(self, "hash", path), self.__class__.__name__)
             elif 500 <= r.status_code < 600:
