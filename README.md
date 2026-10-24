@@ -27,6 +27,7 @@ This library communicates with the APIs of the following malware databases to do
 | [MetaDefender](https://docs.opswat.com/mdcloud)                 | `metadefender`   | MD5, SHA1, SHA256                         | ✓    | downloads for malware exchange partners only           |
 | [PolySwarm](https://github.com/polyswarm/polyswarm-api)         | `polyswarm`      | MD5, SHA1, SHA256                         |      |                                                        |
 | [SOREL-20M](https://github.com/sophos/SOREL-20M)                | `sorel20m`       | SHA256                                    |      | no API key ; Windows PE only (static dataset, 2020)    |
+| [theZoo](https://github.com/ytisf/theZoo)                      | `thezoo`         | MD5, SHA1, SHA256                         | ✓    | no API key ; first use indexes ~420 MB of archives     |
 | [Triage](https://tria.ge/docs)                                  | `triage`         | MD5, SHA1, SHA256, SHA512                 |      |                                                        |
 | [UnpacMe](https://api.unpac.me)                                 | `unpacme`        | SHA256                                    | ✓    | paid plan ; monthly download limit ; supports `-u`     |
 | [URLhaus](https://urlhaus-api.abuse.ch)                         | `urlhaus`        | SHA256                                    | ✓    | same Auth-Key as the other abuse.ch services           |
@@ -44,7 +45,9 @@ pip install malsearch
 
 ### Configuration
 
-MalSearch reads the API keys from an INI configuration file, by default `~/.malsearch.conf`. Each key is set in the `API keys` section under the client's name from the table above; only the clients listed there are used, except a client named with `--select`, which gets a warning if its key is missing. SOREL-20M needs no key: list it with an empty value (`sorel20m =`) to use it.
+MalSearch reads the API keys from an INI configuration file, by default `~/.malsearch.conf`. Each key is set in the `API keys` section under the client's name from the table above; only the clients listed there are used, except a client named with `--select`, which gets a warning if its key is missing. SOREL-20M and theZoo need no key: list them with an empty value (`sorel20m =`, `thezoo =`) to use them.
+
+theZoo only publishes the hashes of its archives, not of the samples inside. On first use, MalSearch downloads every archive listed in theZoo's `maldb.db` (about 420 MB, which takes several minutes) and builds an index of the sample hashes in the user cache directory (`~/.cache/malsearch/thezoo.json` on Linux). Later runs only download the archives that changed.
 
 ```ini
 [API keys]
@@ -61,6 +64,7 @@ malwarefeed = YOUR-GITHUB-TOKEN
 metadefender = YOUR-KEY
 polyswarm = YOUR-KEY
 sorel20m = 
+thezoo = 
 triage = YOUR-KEY
 unpacme = YOUR-KEY
 urlhaus = YOUR-KEY

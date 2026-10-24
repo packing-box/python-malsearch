@@ -15,6 +15,7 @@ MalSearch is a library that allows to collect malware samples from multiple malw
 - [MetaDefender](https://docs.opswat.com/mdcloud)
 - [PolySwarm](https://github.com/polyswarm/polyswarm-api)
 - [SOREL-20M](https://github.com/sophos/SOREL-20M) (no API key)
+- [theZoo](https://github.com/ytisf/theZoo) (no API key)
 - [Triage](https://tria.ge/docs)
 - [UnpacMe](https://api.unpac.me)
 - [URLhaus](https://urlhaus-api.abuse.ch)
