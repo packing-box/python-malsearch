@@ -1,10 +1,14 @@
 site_author: dhondta
-site_name: "MalSearch - A library for getting samples from multiple malware databases"
+site_name: MalSearch
+site_description: Library for getting samples from multiple malware databases
+site_url: https://python-malsearch.readthedocs.io
 repo_url: https://github.com/packing-box/python-malsearch
+edit_uri: edit/main/docs/pages/
 copyright: Copyright &copy; 2024 Alexandre D'Hondt
 docs_dir: pages
 nav:
-  - Introduction: index.md
+  - Home: index.md
+  - Contributing: contributing.md
 extra:
   generator: false
   social:
@@ -20,23 +24,33 @@ extra:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/alex_dhondt
       name: Alex on Twitter
-extra_css:
-  - css/extra.css
 theme:
   name: material
+  logo: img/logo.png
+  favicon: img/icon.png
   palette:
     - scheme: default
       toggle:
-        icon: material/brightness-7 
+        icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-  logo: img/logo.png
-  favicon: img/icon.png
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+    - toc.follow
 use_directory_urls: false
 markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - tables
   - toc:
       permalink: true
-  - admonition

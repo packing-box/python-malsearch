@@ -5,6 +5,23 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 
+[tool.coverage.run]
+source = ["malsearch"]
+omit = [
+  "src/malsearch/__info__.py",
+  "tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  'pragma: no cover',
+  'if.*?__name__.*?==.*?.__main__.:',
+  'def main\(\)\:',
+  'except ImportError:',
+  'except NameError:',
+  'raise NotImplementedError',
+]
+
 [tool.setuptools.dynamic]
 version = {attr = "malsearch.__info__.__version__"}
 

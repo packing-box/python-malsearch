@@ -5,9 +5,9 @@
 [![PyPi](https://img.shields.io/pypi/v/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
 [![Read The Docs](https://readthedocs.org/projects/python-malsearch/badge/?version=latest)](https://python-malsearch.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://github.com/packing-box/python-malsearch/actions/workflows/python-package.yml/badge.svg)](https://github.com/packing-box/python-malsearch/actions/workflows/python-package.yml)
-[![Coverage Status](https://raw.githubusercontent.com/packing-box/python-malsearch/main/docs/coverage.svg)](#)
+[![Security](https://github.com/packing-box/python-malsearch/actions/workflows/security.yml/badge.svg)](https://github.com/packing-box/python-malsearch/actions/workflows/security.yml)
+[![Coverage Status](https://raw.githubusercontent.com/packing-box/python-malsearch/coverage-badge/docs/coverage.svg)](#)
 [![Python Versions](https://img.shields.io/pypi/pyversions/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
-[![Known Vulnerabilities](https://snyk.io/test/github/packing-box/python-malsearch/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/packing-box/python-malsearch?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/malsearch.svg)](https://pypi.python.org/pypi/malsearch/)
 
 This library communicates with the APIs of the following malware databases to download samples by hash and, for some of them, to get feeds of recent sample hashes:
@@ -129,11 +129,5 @@ from malsearch import MalwareBazaar
 MalwareBazaar(api_key="YOUR-KEY", output_dir="samples").get_file_by_hash("2037f9b7dd268eef7d2e950b27c6cf80e3ba692d262c785ab67b04dc71c99bf9")
 ```
 
-
-## :clap:  Supporters
-
-[![Stargazers repo roster for @packing-box/python-malsearch](https://reporoster.com/stars/dark/packing-box/python-malsearch)](https://github.com/packing-box/python-malsearch/stargazers)
-
-[![Forkers repo roster for @packing-box/python-malsearch](https://reporoster.com/forks/dark/packing-box/python-malsearch)](https://github.com/packing-box/python-malsearch/network/members)
 
 <p align="center"><a href="#"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>
