@@ -125,11 +125,15 @@ class _Base:
         return self
     
     def _save(self, filename=None):
+        import os
         from os.path import join
         try:
             c = self.content
-            with open(join(self._output_dir, filename or self.hash), 'wb') as f:
+            # samples may be executables ; never make them executable, only readable and writable by the owner
+            path = join(self._output_dir, filename or self.hash)
+            with open(path, 'wb', opener=lambda p, flags: os.open(p, flags, 0o600)) as f:
                 f.write(c)
+            os.chmod(path, 0o600)  # also applies when overwriting an existing sample
             if filename is None and self._postcheck:
                 import hashlib
                 h = getattr(hashlib, _hash_type(self.hash))()

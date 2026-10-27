@@ -168,6 +168,19 @@ class TestBase(TestCase):
         with self.assertLogs("malsearch", "ERROR"):
             c._save()
 
+    def test_save_permissions(self):
+        if sys.platform == "win32":
+            self.skipTest("POSIX permissions only")
+        c = DummyClient(output_dir=self.tmp)
+        c.hash, c.content = HASH, DATA
+        path = os.path.join(self.tmp, HASH)
+        c._save()
+        self.assertEqual(os.stat(path).st_mode & 0o777, 0o600)
+        # an existing (executable) sample gets overwritten with restricted permissions
+        os.chmod(path, 0o755)
+        c._save()
+        self.assertEqual(os.stat(path).st_mode & 0o777, 0o600)
+
     def test_unzip(self):
         c = DummyClient()
         for archive in [_zip(("sample", DATA), ("other", b"other")), _zip(("sample", DATA), password=b"infected")]:
