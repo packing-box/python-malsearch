@@ -8,6 +8,33 @@ copyright: Copyright &copy; 2024 Alexandre D'Hondt
 docs_dir: pages
 nav:
   - Home: index.md
+  - Installation: installation.md
+  - Configuration: configuration.md
+  - Command-line tool:
+      - malsearch: cli/malsearch.md
+  - Clients:
+      - Overview: clients/index.md
+      - AndroZoo: clients/androzoo.md
+      - ANY.RUN: clients/anyrun.md
+      - Hybrid Analysis: clients/hybridanalysis.md
+      - Joe Sandbox: clients/joesandbox.md
+      - Koodous: clients/koodous.md
+      - Maldatabase: clients/maldatabase.md
+      - Malpedia: clients/malpedia.md
+      - MalShare: clients/malshare.md
+      - Malware Bazaar: clients/malwarebazaar.md
+      - Malware-Feed: clients/malwarefeed.md
+      - MetaDefender: clients/metadefender.md
+      - PolySwarm: clients/polyswarm.md
+      - SOREL-20M: clients/sorel20m.md
+      - theZoo: clients/thezoo.md
+      - Triage: clients/triage.md
+      - UnpacMe: clients/unpacme.md
+      - URLhaus: clients/urlhaus.md
+      - VirusShare: clients/virusshare.md
+      - VirusTotal: clients/virustotal.md
+  - Python API: api.md
+  - How it works: internals.md
   - Contributing: contributing.md
 extra:
   generator: false

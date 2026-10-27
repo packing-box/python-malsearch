@@ -100,7 +100,7 @@ malsearch -m -o samples
 | `--select NAME [NAME ...]`      | only use the given clients                                                            |
 | `--skip NAME [NAME ...]`        | do not use the given clients                                                          |
 | `-u`, `--unpacked`              | also download the unpacked versions of a packed sample (VirusTotal, UnpacMe)          |
-| `--disable-cache`               | disable the requests cache (responses are otherwise cached for one day)               |
+| `--disable-cache`               | disable the requests cache ("not found" answers are otherwise cached for one day)     |
 | `-v`, `--verbose`               | display debug information                                                             |
 
 Each sample is saved under its hash as the filename, and samples that already exist in the output directory are skipped. For each hash, the clients are tried in turn until one returns the sample. Several hashes are downloaded in parallel, with a progress bar if [`tqdm`](https://pypi.org/project/tqdm/) is installed.
