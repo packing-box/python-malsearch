@@ -35,9 +35,9 @@ jobs:
       package: ${{ needs.prepare.outputs.package }}
       cov_python_version: "3.13"
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install ${{ env.package }}
@@ -65,9 +65,9 @@ jobs:
     env:
       cov_badge_path: docs/coverage.svg
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: "3.13"
     - name: Download coverage report
@@ -105,7 +105,7 @@ jobs:
     env:
       package: ${{ needs.prepare.outputs.package }}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - name: Check whether the version is already on PyPI
       # comparing with PyPI (not with the previous commit) also releases a version whose push did not trigger a deploy
       id: version
@@ -125,7 +125,7 @@ jobs:
         mv -f README README.md
     - if: steps.version.outputs.new == 'true'
       name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: "3.13"
     - if: steps.version.outputs.new == 'true'
